@@ -1,3 +1,4 @@
+import React from "react";
 import config from "../config.json";
 import styled from "styled-components";
 import { CSSReset } from "../src/components/CSSReset";
@@ -6,27 +7,27 @@ import { StyledTimeline } from "../src/components/Timeline";
 
 function HomePage() {
     const estilosDaHomePage = {
-            // backgroundColor : "red"
-        };
-
-// console.log(config.playlists);
+        // backgroundColor: "red" 
+    };
+    const [valorDoFiltro, setValorDoFiltro] = React.useState("");
 
     return (
         <>
             <CSSReset />
-
             <div style={{
                 display: "flex",
                 flexDirection: "column",
                 flex: 1,
                 // backgroundColor: "red",
             }}>
-                <Menu />
-                <Header></Header>
-                <Timeline playlists={config.playlists}></Timeline>            
+                {/* Prop Drilling */}
+                <Menu valorDoFiltro={valorDoFiltro} setValorDoFiltro={setValorDoFiltro} />
+                <Header />
+                <Timeline searchValue={valorDoFiltro} playlists={config.playlists}>
+                    Conteúdo
+                </Timeline>
             </div>
         </>
-        
     );
 }
 
@@ -37,17 +38,17 @@ export default HomePage
 //         <div>
 //             Menu
 //         </div>
-//     );
+//     )
 // }
 
+
 const StyledHeader = styled.div`
-   img {
+    img {
         width: 80px;
         height: 80px;
         border-radius: 50%;
     }
     .user-info {
-        margin-top: 50px;
         display: flex;
         align-items: center;
         width: 100%;
@@ -55,66 +56,66 @@ const StyledHeader = styled.div`
         gap: 16px;
     }
 `;
-
+const StyledBanner = styled.div`
+    background-color: blue;
+    background-image: url(${({ bg }) => bg});
+    /* background-image: url(${config.bg}); */
+    height: 230px;
+`;
 function Header() {
-    
     return (
         <StyledHeader>
+            <StyledBanner bg={config.bg} />
             <section className="user-info">
-                {/* <img src="banner" /> */}
                 <img src={`https://github.com/${config.github}.png`} />
-
                 <div>
                     <h2>
-                        {config.name}    
+                        {config.name}
                     </h2>
                     <p>
                         {config.job}
                     </p>
                 </div>
-                                
             </section>
         </StyledHeader>
-    );
+    )
 }
 
-function Timeline(props) {
-
-    // console.log(props);
-    const playListNames = Object.keys(props.playlists);
-
-    //Statement
-    //Retorno por expressão
+function Timeline({ searchValue, ...propriedades }) {
+    // console.log("Dentro do componente", propriedades.playlists);
+    const playlistNames = Object.keys(propriedades.playlists);
+    // Statement
+    // Retorno por expressão
     return (
         <StyledTimeline>
-            {
-                playListNames.map((playListName) => {
-                    const videos = props.playlists[playListName];
-                    console.log(playListName);
-                    console.log(videos);
-
-                    return (
-                        <section>
-                            <h2>{playListName}</h2>
-                            <div>
-                                {
-                                    videos.map((video) => {
-                                        return (
-                                            <a href={video.url}>
-                                                <img src={video.thumb} />
-
-                                                <span>
-                                                    {video.title}
-                                                </span>
-                                            </a>
-                                        )
-                                    })
-                                }
-                            </div>
-                        </section>
-                    );
-                })
-            }
+            {playlistNames.map((playlistName) => {
+                const videos = propriedades.playlists[playlistName];
+                // console.log(playlistName);
+                // console.log(videos);
+                return (
+                    <section key={playlistName}>
+                        <h2>{playlistName}</h2>
+                        <div>
+                            {videos
+                                .filter((video) => {
+                                    const titleNormalized = video.title.toLowerCase();
+                                    const searchValueNormalized = searchValue.toLowerCase();
+                                    return titleNormalized.includes(searchValueNormalized)
+                                })
+                                .map((video) => {
+                                    return (
+                                        <a key={video.url} href={video.url}>
+                                            <img src={video.thumb} />
+                                            <span>
+                                                {video.title}
+                                            </span>
+                                        </a>
+                                    )
+                                })}
+                        </div>
+                    </section>
+                )
+            })}
         </StyledTimeline>
-    );
+    )
 }
